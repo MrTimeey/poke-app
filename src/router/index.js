@@ -13,9 +13,11 @@ const routes = [
         path: "/pokemon/:number",
         name: "pokemon",
         component: Pokemon,
-        props: (route) => ({ number: route.params.number || '1' })
+        props: (route) => ({ number: route.params.number || '1' }),
     },
-    { path: '/page-not-found',
+    {
+        path: '/page-not-found',
+        name: "pageNotFound",
         components: {
             default: PageNotFound
         },

@@ -11,8 +11,18 @@
         {{ pokemon.name }}
       </div>
       <div class="flex flex-wrap justify-center mt-10">
-        <button class="btn btn-blue m-4" :class="number === '1' ? 'not-allowed' : ''" @click="navigateToPokemon(decreaseNumber(number))">Back</button>
-        <button class="btn btn-blue m-4" @click="navigateToPokemon(increaseNumber(number))">Next</button>
+        <button
+            class="btn btn-blue m-4"
+            :class="number === '1' ? 'not-allowed' : ''"
+            @click="number !== '1' ? navigateToPokemon(decreaseNumber(number)): ''">
+          Back
+        </button>
+        <button
+            class="btn btn-blue m-4"
+            :class="number === '386' ? 'not-allowed' : ''"
+            @click="number !== '386' ? navigateToPokemon(increaseNumber(number)): ''">
+          Next
+        </button>
       </div>
     </div>
 
@@ -20,7 +30,7 @@
 </template>
 
 <script>
-import {inject, onUpdated, onMounted, reactive, toRefs} from "vue";
+import {inject, onUpdated, onMounted, reactive, toRefs, watch} from "vue";
 import {useRouter} from "vue-router";
 
 export default {
@@ -32,6 +42,12 @@ export default {
     const state = reactive({
       pokemon: {}
     })
+
+    watch(() => props.number, (newVal, oldVal) => {
+      if (newVal !== oldVal) {
+        loadPokemon(newVal);
+      }
+    });
 
     const axios = inject('axios');
 
@@ -54,8 +70,11 @@ export default {
       axios.get("https://pokeapi.co/api/v2/pokemon/" + number)
           .then(res => res.data)
           .then(data => {
+
+            // pokemon-species for names
             let images = [];
-            if (data.sprites?.other["official-artwork"] !== undefined) {
+            let otherElement = data.sprites?.other["official-artwork"];
+            if (otherElement !== undefined && otherElement !== null) {
               images.push(Object.values(data.sprites.other["official-artwork"]))
             } else {
               images.push(data.sprites.front_default)
@@ -66,10 +85,15 @@ export default {
           .then(data => state.pokemon = data);
     }
 
-    onUpdated(() => loadPokemon(props.number));
     onMounted(() => loadPokemon(props.number));
     return { ...toRefs(state), navigateToPokemon, increaseNumber, decreaseNumber }
   },
+  beforeRouteEnter(to, _from, next) {
+    if (to.params.number > 386) {
+      next({name: 'pageNotFound'})
+    }
+    next();
+  }
 }
 </script>
 
