@@ -2,13 +2,13 @@
   <div class="mt-10 p-4 flex flex-wrap justify-center">
     <div class="flex-col">
       <div class="flex flex-wrap justify-center">
-        <img v-for="image in pokemon.images"
+        <img v-for="image in images"
              :src="image"
              class="max-w-sm h-auto"
              alt="">
       </div>
       <div class="flex flex-wrap justify-center text-6xl text-blue-600">
-        {{ pokemon.name }}
+        {{ getTranslatedName('de') }}
       </div>
       <div class="flex flex-wrap justify-center mt-10">
         <button
@@ -30,8 +30,9 @@
 </template>
 
 <script>
-import {inject, onUpdated, onMounted, reactive, toRefs, watch} from "vue";
+import {inject, onUpdated, onMounted, reactive, toRefs, watch, computed} from "vue";
 import {useRouter} from "vue-router";
+import {usePokemonStore} from "../stores/pokemon";
 
 export default {
   name: "Pokemon",
@@ -39,17 +40,13 @@ export default {
     number: String
   },
   setup(props) {
-    const state = reactive({
-      pokemon: {}
-    })
+    const store = usePokemonStore();
 
     watch(() => props.number, (newVal, oldVal) => {
       if (newVal !== oldVal) {
-        loadPokemon(newVal);
+        store.fetchPokemon(newVal);
       }
     });
-
-    const axios = inject('axios');
 
     const router = useRouter()
 
@@ -58,7 +55,6 @@ export default {
     }
 
     function decreaseNumber(number) {
-      console.log()
       return Number(number) - 1;
     }
 
@@ -66,27 +62,12 @@ export default {
       return router.push({ path: `/pokemon/${number}`});
     }
 
-    function loadPokemon(number) {
-      axios.get("https://pokeapi.co/api/v2/pokemon/" + number)
-          .then(res => res.data)
-          .then(data => {
+    const images = computed(() => {
+      return store.getImages
+    })
 
-            // pokemon-species for names
-            let images = [];
-            let otherElement = data.sprites?.other["official-artwork"];
-            if (otherElement !== undefined && otherElement !== null) {
-              images.push(Object.values(data.sprites.other["official-artwork"]))
-            } else {
-              images.push(data.sprites.front_default)
-              images.push(data.sprites.back_default)
-            }
-            return { ...data, images: images};
-          })
-          .then(data => state.pokemon = data);
-    }
-
-    onMounted(() => loadPokemon(props.number));
-    return { ...toRefs(state), navigateToPokemon, increaseNumber, decreaseNumber }
+    onMounted(() => store.fetchPokemon(props.number));
+    return { ...toRefs(store.$state), images, getTranslatedName : store.getName, navigateToPokemon, increaseNumber, decreaseNumber }
   },
   beforeRouteEnter(to, _from, next) {
     if (to.params.number > 386) {
