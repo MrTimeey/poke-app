@@ -30,13 +30,22 @@ export const usePokemonStore = defineStore("pokemon", {
         },
         getName: (state) => {
             console.log(state.pokemonSpecies)
-         return (lang) => {
+            return (lang) => {
                 if (!state.pokemonSpecies.names) {
                     return ''
                 }
-             const translatedName = state.pokemonSpecies.names.find(e => e.language.name === lang);
-             return capitalizeFirstLetter(translatedName.name??'')
-         }
+                const translatedName = state.pokemonSpecies.names.find(e => e.language.name === lang);
+                return capitalizeFirstLetter(translatedName.name ?? '')
+            }
+        },
+        getTypes(state) {
+            if (!state.pokemon?.types) {
+                return []
+            }
+            return state.pokemon.types
+                .map(t => t.type.url)
+                .map(u => u.endsWith('/') ? u.slice(0, u.length - 1) : u)
+                .map(u => u.substring(u.lastIndexOf('/') + 1));
         }
     },
     actions: {
