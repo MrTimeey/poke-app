@@ -50,17 +50,14 @@ export const usePokemonStore = defineStore("pokemon", {
     },
     actions: {
         async fetchPokemon(number) {
-            try {
-                axios.get("https://pokeapi.co/api/v2/pokemon/" + number)
-                    .then(res => res.data)
-                    .then(data => this.pokemon = data);
-                axios.get("https://pokeapi.co/api/v2/pokemon-species/" + number)
-                    .then(res => res.data)
-                    .then(data => this.pokemonSpecies = data)
-            } catch (e) {
-                console.log(e);
-            }
-
+            axios.get("https://pokeapi.co/api/v2/pokemon/" + number)
+                .then(res => res.data)
+                .then(data => this.pokemon = data)
+                .catch(e => console.log(e));
+            axios.get("https://pokeapi.co/api/v2/pokemon-species/" + number)
+                .then(res => res.data)
+                .then(data => this.pokemonSpecies = data)
+                .catch(e => console.log(e));
         }
     },
 })
